@@ -13,35 +13,35 @@ def get_primary_tag_html(primary_tag, page):
     return soup
 
 
-def extract_secondary_tags(soup):
+def extract_secondary_tags(soup, freq_dict):
     sys_tags = ['发布', '加黑', '移动', '编辑', '删除', '转载', '分享', '推荐', '喜欢', '热度', '评论']
     raw_tags = soup.findAll("span", {"class": "opti"})
-    clean_tags = []
+    dict_keys = freq_dict.keys()
     for tag in raw_tags:
-        if tag and tag != "":
-            clean_tags.append(tag.text) if tag.text[:2] not in sys_tags else None
-    return clean_tags
+        if tag and tag != "" and tag.text[:2] not in sys_tags:
+            tag_text = tag.text.replace("\xa0", " ")
+            if tag_text not in dict_keys:
+                freq_dict.update({tag_text: 1})
+            else:
+                freq_dict[tag_text] = freq_dict[tag_text] + 1
 
 
 def find_all_secondary_tags(primary_tag, pages):
-    all_secondary_tags = []
+    all_secondary_tags = {}
     for i in range(1, pages + 1):
         print(f'extracting page: {i}')
         soup = get_primary_tag_html(primary_tag, i)
-        page_tags = extract_secondary_tags(soup)
-        all_secondary_tags = all_secondary_tags + page_tags
+        extract_secondary_tags(soup, all_secondary_tags)
     return all_secondary_tags
 
 
-def get_tag_freq(tags):
-    tags.sort()
-    freqs = {key.replace("\xa0", " "): len(list(group)) for key, group in groupby(tags)}
+def get_tag_freq(freqs):
     sorted_freqs = sorted(freqs.items(), key=lambda kv: kv[1], reverse=True)
     return sorted_freqs
 
 
 def write_to_csv(tag, pages, freqs):
-    with open(f"{tag}_{pages}_sub_tags.csv","w") as f:
+    with open(f"{tag}_{pages}_sub_tags.csv", "w") as f:
         for k, v in freqs:
             f.write(f"{k},{v}\n")
 
