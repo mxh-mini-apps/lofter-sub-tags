@@ -49,7 +49,7 @@ def write_to_csv(tag, pages, freqs, path):
 
 
 # 主要 run 这个就好
-def get_all_sub_tags(tag, pages, path=""):
+def get_all_sub_tags(tag, pages=100, path=""):
     sub_tags = find_all_secondary_tags(tag, pages)
     freqs = get_tag_freq(sub_tags)
     write_to_csv(tag, pages, freqs, path)
