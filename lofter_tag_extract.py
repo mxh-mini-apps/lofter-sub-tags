@@ -7,6 +7,7 @@ import datetime
 import requests
 from bs4 import BeautifulSoup
 
+SYS_TAGS = ['发布', '加黑', '移动', '编辑', '删除', '转载', '分享', '推荐', '喜欢', '热度', '评论']
 
 def get_primary_tag_html(primary_tag, page):
     url = f"http://lofter.com/tag/{primary_tag}?page={page}"
@@ -16,16 +17,15 @@ def get_primary_tag_html(primary_tag, page):
 
 
 def extract_secondary_tags(soup, freq_dict):
-    sys_tags = ['发布', '加黑', '移动', '编辑', '删除', '转载', '分享', '推荐', '喜欢', '热度', '评论']
     raw_tags = soup.findAll("span", {"class": "opti"})
     dict_keys = freq_dict.keys()
     for tag in raw_tags:
-        if tag and tag != "" and tag.text[:2] not in sys_tags:
+        if tag and tag != "" and tag.text[:2] not in SYS_TAGS:
             tag_text = tag.text.replace("\xa0", " ")
-            if tag_text not in dict_keys:
-                freq_dict.update({tag_text: 1})
-            else:
+            if tag_text in dict_keys:
                 freq_dict[tag_text] = freq_dict[tag_text] + 1
+            else:
+                freq_dict.update({tag_text: 1})
 
 
 def find_all_secondary_tags(primary_tag, pages):
@@ -38,12 +38,12 @@ def find_all_secondary_tags(primary_tag, pages):
 
 
 def get_tag_freq(freqs):
-    sorted_freqs = sorted(freqs.items(), key=lambda kv: kv[1], reverse=True)
-    return sorted_freqs
+    return sorted(freqs.items(), key=lambda kv: kv[1], reverse=True)
 
 
 def write_to_csv(tag, pages, freqs, path):
     with open(os.path.join(path, f"{tag}_{pages}_sub_tags.csv"), "w") as f:
+        f.write("Tag,Freq\n")
         for k, v in freqs:
             f.write(f"{k},{v}\n")
 
