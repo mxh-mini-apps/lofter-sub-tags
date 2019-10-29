@@ -23,7 +23,7 @@ def extract_secondary_tags(soup, freq_dict):
         if tag and tag != "" and tag.text[:2] not in SYS_TAGS:
             tag_text = tag.text.replace("\xa0", " ")
             if tag_text in dict_keys:
-                freq_dict[tag_text] = freq_dict[tag_text] + 1
+                freq_dict[tag_text] += 1
             else:
                 freq_dict.update({tag_text: 1})
 
@@ -37,7 +37,7 @@ def find_all_secondary_tags(primary_tag, pages):
     return all_secondary_tags
 
 
-def get_tag_freq(freqs):
+def sort_tag_freq(freqs):
     return sorted(freqs.items(), key=lambda kv: kv[1], reverse=True)
 
 
@@ -51,7 +51,7 @@ def write_to_csv(tag, pages, freqs, path):
 # 主要 run 这个就好
 def get_all_sub_tags(tag, pages=100, path=""):
     sub_tags = find_all_secondary_tags(tag, pages)
-    freqs = get_tag_freq(sub_tags)
+    freqs = sort_tag_freq(sub_tags)
     write_to_csv(tag, pages, freqs, path)
     print(f"done for {tag}")
 
