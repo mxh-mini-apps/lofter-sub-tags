@@ -1,9 +1,11 @@
 # 跑之前要先用下面这行代码安装library
 # 在cmd terminal跑: pip install requests beautifulsoup4
 
+import os
+import os.path
+import datetime
 import requests
 from bs4 import BeautifulSoup
-from itertools import groupby
 
 
 def get_primary_tag_html(primary_tag, page):
@@ -40,15 +42,28 @@ def get_tag_freq(freqs):
     return sorted_freqs
 
 
-def write_to_csv(tag, pages, freqs):
-    with open(f"{tag}_{pages}_sub_tags.csv", "w") as f:
+def write_to_csv(tag, pages, freqs, path):
+    with open(os.path.join(path, f"{tag}_{pages}_sub_tags.csv"), "w") as f:
         for k, v in freqs:
             f.write(f"{k},{v}\n")
 
 
 # 主要 run 这个就好
-def get_all_sub_tags(tag, pages):
+def get_all_sub_tags(tag, pages, path=""):
     sub_tags = find_all_secondary_tags(tag, pages)
     freqs = get_tag_freq(sub_tags)
-    write_to_csv(tag, pages, freqs)
-    print("done")
+    write_to_csv(tag, pages, freqs, path)
+    print(f"done for {tag}")
+
+
+today = datetime.datetime.today().strftime("%Y-%m-%d")
+today_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), today)
+
+
+def get_sub_tags_all_members(pages=100, path=today_path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+    with open("members.txt", "r") as members:
+        for m in members:
+            get_all_sub_tags(m.strip(), pages, path)
+    print("all done")
